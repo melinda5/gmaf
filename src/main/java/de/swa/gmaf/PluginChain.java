@@ -1,5 +1,12 @@
 package de.swa.gmaf;
 
+import de.swa.gmaf.plugin.GMAF_Plugin;
+import de.swa.gmaf.plugin.fusion.SpacialFeatureFusion;
+import de.swa.mmfg.*;
+import de.swa.mmfg.builder.FeatureVectorBuilder;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -7,22 +14,15 @@ import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.Vector;
 
-import javax.imageio.ImageIO;
-
-import de.swa.gmaf.plugin.GMAF_Plugin;
-import de.swa.gmaf.plugin.fusion.SpacialFeatureFusion;
-import de.swa.mmfg.GeneralMetadata;
-import de.swa.mmfg.Location;
-import de.swa.mmfg.MMFG;
-import de.swa.mmfg.Node;
-import de.swa.mmfg.TechnicalAttribute;
-import de.swa.mmfg.builder.FeatureVectorBuilder;
-
-/** this class chains the filters and plugins for GMAF processing **/
+/**
+ * this class chains the filters and plugins for GMAF processing
+ **/
 public class PluginChain {
 	private Vector<GMAF_Plugin> plugins = new Vector<GMAF_Plugin>();
 
-	/** constructor, which receives a vector of plugin-classes for the current GMAF processing **/
+	/**
+	 * constructor, which receives a vector of plugin-classes for the current GMAF processing
+	 **/
 	public PluginChain(Vector<String> pluginClasses) {
 		for (String s : pluginClasses) {
 			try {
@@ -38,15 +38,17 @@ public class PluginChain {
 			}
 		}
 	}
-	
-	/** processes a given asset **/
+
+	/**
+	 * processes a given asset
+	 **/
 	public void process(URL url, File f, byte[] bytes, MMFG fv, int depth, int max, String extension) {
 		if (depth < 0)
 			return;
 		String depth_offset = "";
 		for (int i = 0; i < depth; i++)
 			depth_offset += "  ";
-		
+
 		// process general data
 		GeneralMetadata gm = new GeneralMetadata();
 		gm.setFileName(f.getName());
@@ -96,8 +98,18 @@ public class PluginChain {
 									BufferedImage section = img.getSubimage(ta.getRelative_x(), ta.getRelative_y(),
 											ta.getWidth(), ta.getHeight());
 
+									if (extension.equalsIgnoreCase(".png")) {
+										BufferedImage newImage = new BufferedImage(section.getWidth(), section.getHeight(), BufferedImage.TYPE_INT_RGB);
+										newImage.createGraphics().drawImage(section, 0, 0, Color.BLACK, null);
+										section = newImage;
+									}
+
+
 									ByteArrayOutputStream baos = new ByteArrayOutputStream();
-									ImageIO.write(section, "jpg", baos);
+									boolean returnValue = ImageIO.write(section, "jpg", baos);
+									if (!returnValue) {
+										throw new RuntimeException("Could not create subimage from image '" + f.getName() + "'");
+									}
 									baos.flush();
 									byte[] sectionBytes = baos.toByteArray();
 									baos.close();
@@ -119,6 +131,7 @@ public class PluginChain {
 										return;
 									}
 								} catch (Exception x) {
+									System.out.println("Exception while trying to process file: " + f.getAbsolutePath() + f.getName());
 									x.printStackTrace();
 								}
 							}
@@ -127,7 +140,7 @@ public class PluginChain {
 				}
 			}
 		}
-		
+
 		// calculate spacial relationships based on the bounding boxes
 		SpacialFeatureFusion sff = new SpacialFeatureFusion();
 		sff.optimize(fv, null);
