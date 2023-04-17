@@ -108,21 +108,20 @@ public class PluginChain {
 									ByteArrayOutputStream baos = new ByteArrayOutputStream();
 									boolean returnValue = ImageIO.write(section, "jpg", baos);
 									if (!returnValue) {
-										throw new RuntimeException("Could not write subsesction image");
+										throw new RuntimeException("Could not create subimage from image '" + f.getName() + "'");
 									}
 									baos.flush();
 									byte[] sectionBytes = baos.toByteArray();
 									baos.close();
 
-									String filename = "temp/section_" + fvp.getClass().getName() + "_" + System.currentTimeMillis() + ".jpg";
-									FileOutputStream fout = new FileOutputStream(new File(filename));
+									FileOutputStream fout = new FileOutputStream(new File("temp/section_"
+											+ fvp.getClass().getName() + "_" + System.currentTimeMillis() + ".jpg"));
 									ImageIO.write(section, "jpg", fout);
 
-									fout.close();
 									// reprocess parts of this image
 									System.out.println(
-											depth_offset + "  reprocessing TA " + ta.getWidth() + " " + ta.getHeight() + "(filename: " + filename + "; bytes: " + sectionBytes.length + ")");
-									MMFG newImg = new GMAF().processAsset(sectionBytes, filename, "tmp", depth--,
+											depth_offset + "  reprocessing TA " + ta.getWidth() + " " + ta.getHeight());
+									MMFG newImg = new GMAF().processAsset(sectionBytes, "section.jpg", "tmp", depth--,
 											max, f.getName(), null);
 
 									FeatureVectorBuilder.mergeIntoFeatureVector(fv, newImg);
