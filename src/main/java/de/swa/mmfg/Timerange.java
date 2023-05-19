@@ -25,6 +25,10 @@ public class Timerange {
 		this.isRelativeTime = isRelativeTime;
 	}
 
+	public Timerange() {
+		
+	}
+
 	public Timerange(Date begin, Date end) {
 		this.begin = begin;
 		this.end = end;
