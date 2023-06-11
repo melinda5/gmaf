@@ -5,7 +5,7 @@ import java.util.Vector;
 
 public class Timerange {
 	private Date begin, end;
-	private Vector<Node> nodes;
+	private Vector<Node> nodes = new Vector<Node>();
 	private boolean isUniversalTime = true;
 	private boolean isRelativeTime = false;
 	
@@ -78,6 +78,8 @@ public class Timerange {
 	public boolean isInside(Timerange toCompare) {
 		Date otherStart = toCompare.begin;
 		Date otherEnd = toCompare.end;
+
+		if (otherStart == null || otherEnd == null) return false;
 
 		return begin.before(otherStart) && end.after(otherEnd);
 	}
