@@ -14,6 +14,11 @@ on:
   pull_request:
     branches: [ "master" ]
 
+permissions:
+    contents: read
+    checks: write
+    id-token: write
+
 jobs:
   build:
 
@@ -31,6 +36,9 @@ jobs:
       run: mvn -B package --file pom.xml
     - name: JUnit Report Action
       uses: mikepenz/action-junit-report@v3.7.6
+      with:
+          report_paths: '**/target/surefire-reports/TEST-*.xml'
+          fail_on_failure: true
 
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive

@@ -26,6 +26,7 @@ public class Node {
 	public Node(String name, MMFG fv, Timerange tr) {
 		this(name, fv);
 		fv.addTimeRange(tr);
+		fv.allNodes.add(this);
 		tr.addNode(this);
 		timerange = tr;
 	}
@@ -41,6 +42,7 @@ public class Node {
 	public Node(String name, String value, MMFG fv, Timerange tr) {
 		this(name, value, fv);
 		fv.addTimeRange(tr);
+		fv.allNodes.add(this);
 		tr.addNode(this);
 		timerange = tr;
 	}
