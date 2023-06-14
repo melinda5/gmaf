@@ -17,12 +17,17 @@ public class Timerange {
 		this.isUniversalTime = isUniversalTime;
 	}
 
+	// TODO: What does it change? Should is greater / is smaller ignore date?
 	public boolean isRelativeTime() {
 		return isRelativeTime;
 	}
 
 	public void setRelativeTime(boolean isRelativeTime) {
 		this.isRelativeTime = isRelativeTime;
+	}
+
+	public Timerange() {
+		
 	}
 
 	public Timerange(Date begin, Date end) {
@@ -33,6 +38,11 @@ public class Timerange {
 	public Date getBegin() {
 		return begin;
 	}
+
+	/**
+	 * Set the beginning date of the timerange.
+	 * @param begin
+	 */
 	public void setBegin(Date begin) {
 		this.begin = begin;
 	}
@@ -62,5 +72,13 @@ public class Timerange {
 		Date otherEnd = ta.getEnd();
 		if (end.after(otherEnd)) return true;
 		return false;
+	}
+
+
+	public boolean isInside(Timerange toCompare) {
+		Date otherStart = toCompare.begin;
+		Date otherEnd = toCompare.end;
+
+		return begin.before(otherStart) && end.after(otherEnd);
 	}
 }
