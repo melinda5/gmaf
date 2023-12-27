@@ -3,10 +3,7 @@ package de.swa.ui;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -23,8 +20,6 @@ import de.swa.gc.processing.GraphCodeMeta;
 import de.swa.gmaf.GMAF;
 import de.swa.mmfg.GeneralMetadata;
 import de.swa.mmfg.MMFG;
-import de.swa.mmfg.builder.FeatureVectorBuilder;
-import de.swa.mmfg.builder.XMLEncodeDecode;
 
 /** data structure representing the collection of all MMFGs **/
 public class DefaultMMFGCollection extends MMFGCollection {
@@ -146,20 +141,6 @@ public class DefaultMMFGCollection extends MMFGCollection {
 			ex.printStackTrace();
 		}
 		inited = true;
-	}
-
-	@Override
-	public MMFG loadFromMMFGFile(File existingMMFG) {
-		try {
-			String content = "";
-			List<String> lines = Files.readAllLines(existingMMFG.toPath());
-			content = String.join("\n", lines);
-			MMFG mmfg = FeatureVectorBuilder.unflatten(content, new XMLEncodeDecode());
-			return mmfg;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return new MMFG();
 	}
 
 	/** adds a MMFG to the collection **/

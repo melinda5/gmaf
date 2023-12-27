@@ -177,18 +177,7 @@ public class MvMMFGCollection extends MMFGCollection {
 		inited = true;
 	}
 
-	public MMFG loadFromMMFGFile(File existingMMFG) {
-		try {
-			String content = "";
-			List<String> lines = Files.readAllLines(existingMMFG.toPath());
-			content = String.join("\n", lines);
-			MMFG mmfg = FeatureVectorBuilder.unflatten(content, new XMLEncodeDecode());
-			return mmfg;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return new MMFG();
-	}
+
 
 	/** adds a MMFG to the collection **/
 	public void addToCollection(MMFG m) {
