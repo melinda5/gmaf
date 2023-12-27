@@ -182,36 +182,6 @@ public class MvMMFGCollection extends MMFGCollection {
 			String content = "";
 			List<String> lines = Files.readAllLines(existingMMFG.toPath());
 			content = String.join("\n", lines);
-//			try (BufferedReader br = new BufferedReader(new FileReader(existingMMFG))) {
-//				String line = "";
-//				while ((line = br.readLine()) != null) {
-//					content += line + "\n";
-//				}
-//			} catch (Exception ex) {
-//				ex.printStackTrace();
-//			}
-			//try (Scanner sc = new Scanner(existingMMFG, "UTF-8")) {
-//
-//			} catch (FileNotFoundException e) {
-//				throw new RuntimeException(e);
-//			} catch (IOException e) {
-//				throw new RuntimeException(e);
-//			} ;
-//				while (sc.hasNextLine()) {
-//					String line = sc.nextLine();
-//					content += line + "\n";
-//				}
-//				// note that Scanner suppresses exceptions
-//				if (sc.ioException() != null) {
-//					throw sc.ioException();
-//				}
-//			}
-//			RandomAccessFile rf = new RandomAccessFile(existingMMFG, "rw");
-//			String line = "";
-//			while ((line = rf.readLine()) != null) {
-//				content += line + "\n";
-//			}
-		//	rf.close();
 			MMFG mmfg = FeatureVectorBuilder.unflatten(content, new XMLEncodeDecode());
 			return mmfg;
 		} catch (Exception ex) {

@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -149,14 +151,10 @@ public class DefaultMMFGCollection extends MMFGCollection {
 	@Override
 	public MMFG loadFromMMFGFile(File existingMMFG) {
 		try {
-			RandomAccessFile rf = new RandomAccessFile(existingMMFG, "rw");
-			String line = "";
 			String content = "";
-			while ((line = rf.readLine()) != null) {
-				content += line + "\n";
-			}
+			List<String> lines = Files.readAllLines(existingMMFG.toPath());
+			content = String.join("\n", lines);
 			MMFG mmfg = FeatureVectorBuilder.unflatten(content, new XMLEncodeDecode());
-			rf.close();
 			return mmfg;
 		} catch (Exception ex) {
 			ex.printStackTrace();
