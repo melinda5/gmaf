@@ -1,10 +1,14 @@
 package de.swa.mmfg;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Date;
 import java.util.Vector;
 
 public class Timerange {
 	private Date begin, end;
+
+	@JsonIgnore
 	private Vector<Node> nodes;
 	private boolean isUniversalTime = true;
 	private boolean isRelativeTime = false;

@@ -11,7 +11,7 @@ public class MMFGCollectionFactory {
 	private static Hashtable<String, MMFGCollection> sessions = new Hashtable<String, MMFGCollection>();
 
 
-	public static MMFGCollection createOrGetCollection() {
+	public static synchronized MMFGCollection createOrGetCollection() {
 		if (instance == null) {
 			String cm = Configuration.getInstance().getCollectionManager();
 
@@ -34,7 +34,7 @@ public class MMFGCollectionFactory {
 
 	}
 
-	public static MMFGCollection createOrGetCollection(String session_id) {
+	public static synchronized MMFGCollection createOrGetCollection(String session_id) {
 		if (sessions.get(session_id) != null)
 			return sessions.get(session_id);
 		else {
@@ -46,20 +46,21 @@ public class MMFGCollectionFactory {
 			String cm = Configuration.getInstance().getCollectionManager();
 
 			// Create Class via Reflection
-			try {
-				MMFGCollection aInstance = ((MMFGCollection) Class.forName(cm).newInstance());
+			//try {
+				//MMFGCollection aInstance = ((MMFGCollection) Class.forName(cm).newInstance());
+				MMFGCollection aInstance = createOrGetCollection();
 				//instance.getInstance();
 				sessions.put(session_id, aInstance);
-				aInstance.init();
+				//aInstance.init();
 				return aInstance;
 
-			} catch (InstantiationException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(e);
-			}
+			//} catch (InstantiationException e) {
+			//	throw new RuntimeException(e);
+			//} catch (IllegalAccessException e) {
+			//	throw new RuntimeException(e);
+			//} catch (ClassNotFoundException e) {
+			//	throw new RuntimeException(e);
+			//}
 		}
 	}
 }

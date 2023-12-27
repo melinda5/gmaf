@@ -1,5 +1,7 @@
 package de.swa.mmfg;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /** data type to represent Composition Relationships **/
 
 public class CompositionRelationship {
@@ -16,6 +18,7 @@ public class CompositionRelationship {
 	public static final int RELATION_DESCRIPTION = 21;
 	
 	private int type;
+	@JsonIgnore
 	private transient Node relatedObject;
 	
 	public CompositionRelationship() {}
