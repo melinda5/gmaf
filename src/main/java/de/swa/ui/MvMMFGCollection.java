@@ -17,13 +17,9 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.util.Hashtable;
-import java.util.UUID;
-import java.util.Vector;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.*;
 
 /**
  * Created by Patrick Steinert on 27.12.23.
@@ -58,7 +54,9 @@ public class MvMMFGCollection extends MMFGCollection {
 	public synchronized void init() {
 		if (inited)
 			return;
-		inited = true;
+		synchronized (this) {
+			inited = true;
+		}
 		GMAF gmaf = new GMAF();
 		name = Configuration.getInstance().getCollectionName();
 
@@ -181,14 +179,40 @@ public class MvMMFGCollection extends MMFGCollection {
 
 	public MMFG loadFromMMFGFile(File existingMMFG) {
 		try {
-			RandomAccessFile rf = new RandomAccessFile(existingMMFG, "rw");
-			String line = "";
 			String content = "";
-			while ((line = rf.readLine()) != null) {
-				content += line + "\n";
-			}
+			List<String> lines = Files.readAllLines(existingMMFG.toPath());
+			content = String.join("\n", lines);
+//			try (BufferedReader br = new BufferedReader(new FileReader(existingMMFG))) {
+//				String line = "";
+//				while ((line = br.readLine()) != null) {
+//					content += line + "\n";
+//				}
+//			} catch (Exception ex) {
+//				ex.printStackTrace();
+//			}
+			//try (Scanner sc = new Scanner(existingMMFG, "UTF-8")) {
+//
+//			} catch (FileNotFoundException e) {
+//				throw new RuntimeException(e);
+//			} catch (IOException e) {
+//				throw new RuntimeException(e);
+//			} ;
+//				while (sc.hasNextLine()) {
+//					String line = sc.nextLine();
+//					content += line + "\n";
+//				}
+//				// note that Scanner suppresses exceptions
+//				if (sc.ioException() != null) {
+//					throw sc.ioException();
+//				}
+//			}
+//			RandomAccessFile rf = new RandomAccessFile(existingMMFG, "rw");
+//			String line = "";
+//			while ((line = rf.readLine()) != null) {
+//				content += line + "\n";
+//			}
+		//	rf.close();
 			MMFG mmfg = FeatureVectorBuilder.unflatten(content, new XMLEncodeDecode());
-			rf.close();
 			return mmfg;
 		} catch (Exception ex) {
 			ex.printStackTrace();
