@@ -76,6 +76,7 @@ public class Timerange {
 
 
 	public boolean isInside(Timerange toCompare) {
+		if (toCompare == null) return false;
 		Date otherStart = toCompare.begin;
 		Date otherEnd = toCompare.end;
 

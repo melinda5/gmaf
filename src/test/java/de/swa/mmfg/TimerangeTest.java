@@ -148,6 +148,8 @@ public void testINotsInside2() {
 
 		Date end = Date.from(start.toInstant());
 		end.setHours(2);
+		assertFalse(comparable.isInside(null));
+
 
 		comparable.setBegin(start);
 		comparable.setEnd(end);

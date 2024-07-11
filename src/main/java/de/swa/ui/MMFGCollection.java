@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -37,8 +39,9 @@ public class MMFGCollection {
 	public static synchronized MMFGCollection getInstance() {
 		if (instance == null) {
 			instance = new MMFGCollection();
+			instance.init();
 		}
-		instance.init();
+		//instance.init();
 		return instance;
 	}
 
@@ -53,7 +56,7 @@ public class MMFGCollection {
 //			coll.init();
 //			sessions.put(session_id, coll);
 //			return coll;
-			
+
 			sessions.put(session_id, getInstance());
 			return instance;
 		}
@@ -61,7 +64,7 @@ public class MMFGCollection {
 
 	private static boolean inited = false;
 
-	private MMFGCollection() {
+	protected MMFGCollection() {
 	}
 
 	private Hashtable<UUID, MMFG> idMap = new Hashtable<UUID, MMFG>();
@@ -163,18 +166,27 @@ public class MMFGCollection {
 
 	public MMFG loadFromMMFGFile(File existingMMFG) {
 		try {
-			RandomAccessFile rf = new RandomAccessFile(existingMMFG, "rw");
-			String line = "";
 			String content = "";
-			while ((line = rf.readLine()) != null) {
-				content += line + "\n";
-			}
+			List<String> lines = Files.readAllLines(existingMMFG.toPath());
+			content = String.join("\n", lines);
 			MMFG mmfg = FeatureVectorBuilder.unflatten(content, new XMLEncodeDecode());
-			rf.close();
 			return mmfg;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+//		try {
+//			RandomAccessFile rf = new RandomAccessFile(existingMMFG, "rw");
+//			String line = "";
+//			String content = "";
+//			while ((line = rf.readLine()) != null) {
+//				content += line + "\n";
+//			}
+//			MMFG mmfg = FeatureVectorBuilder.unflatten(content, new XMLEncodeDecode());
+//			rf.close();
+//			return mmfg;
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
 		return new MMFG();
 	}
 
@@ -199,6 +211,7 @@ public class MMFGCollection {
 			fileMap.remove(f);
 			addToCollection(m);
 		} catch (Exception x) {
+			x.printStackTrace();
 		}
 		System.out.println("MMFG replaced in collection for file " + f.getAbsolutePath());
 	}
@@ -258,7 +271,7 @@ public class MMFGCollection {
 		return collection.indexOf(m);
 	}
 
-	private Vector<MMFG> processQuery(GraphCode gcQuery, int type) {
+	public Vector<MMFG> processQuery(GraphCode gcQuery, int type) {
 		CollectionProcessor cp = new DefaultCollectionProcessor();
 		try {
 			String collectionProcessorClass = Configuration.getInstance().getCollectionProcessorClass();
