@@ -1,5 +1,7 @@
 package de.swa.mmfg;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Date;
 import java.util.Vector;
 

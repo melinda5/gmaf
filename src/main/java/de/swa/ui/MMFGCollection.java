@@ -15,28 +15,29 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 
 import de.swa.gc.GraphCode;
-import de.swa.gc.GraphCodeGenerator;
-import de.swa.gc.GraphCodeIO;
-import de.swa.gc.processing.CollectionProcessor;
-import de.swa.gc.processing.DefaultCollectionProcessor;
-import de.swa.gc.processing.GraphCodeMeta;
-import de.swa.gmaf.GMAF;
-import de.swa.mmfg.GeneralMetadata;
 import de.swa.mmfg.MMFG;
 import de.swa.mmfg.builder.FeatureVectorBuilder;
 import de.swa.mmfg.builder.XMLEncodeDecode;
+import org.apache.jena.rdf.model.Model;
 
-/** data structure representing the collection of all MMFGs **/
-public class MMFGCollection {
-	private Vector<MMFG> collection = new Vector<MMFG>();
-	private Hashtable<File, MMFG> fileMap = new Hashtable<File, MMFG>();
-	private String name = "";
-	private Model model = ModelFactory.createDefaultModel();
+import java.io.File;
+import java.nio.file.Files;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.UUID;
+import java.util.Vector;
 
+/**
+ * Created by Patrick Steinert on 27.12.23.
+ */
+public abstract class MMFGCollection {
+	/**
+	 * singleton pattern access
+	 **/
 	private static MMFGCollection instance;
 
 	/** singleton pattern access **/
-	public static synchronized MMFGCollection getInstance() {
+/*	protected static synchronized MMFGCollection getInstance() {
 		if (instance == null) {
 			instance = new MMFGCollection();
 			instance.init();
@@ -44,7 +45,7 @@ public class MMFGCollection {
 		//instance.init();
 		return instance;
 	}
-
+  */
 	/** session facade pattern access **/
 	private static Hashtable<String, MMFGCollection> sessions = new Hashtable<String, MMFGCollection>();
 
@@ -67,102 +68,27 @@ public class MMFGCollection {
 	protected MMFGCollection() {
 	}
 
-	private Hashtable<UUID, MMFG> idMap = new Hashtable<UUID, MMFG>();
-	private Vector<ProgressListener> progressListeners = new Vector<ProgressListener>();
-	public void addProgressListener(ProgressListener pl) { progressListeners.add(pl); }
-	
-	private Vector<RefreshListener> refreshListeners = new Vector<RefreshListener>();
-	public void addRefreshListener(RefreshListener re) { refreshListeners.add(re); }
-	
-	public void refresh() {
-		for (RefreshListener re : refreshListeners) re.refresh();
-	}
+//	protected static synchronized MvMMFGCollection getInstance(String session_id) {
+//		if (sessions.get(session_id) != null)
+//			return sessions.get(session_id);
+//		else {
+////			MMFGCollection coll = new MMFGCollection();
+////			coll.init();
+////			sessions.put(session_id, coll);
+////			return coll;
+//
+//			sessions.put(session_id, getInstance());
+//			return instance;
+//		}
+//	}
 
-	/** initializes the collection and the configuration **/
-	public synchronized void init() {
-		if (inited)
-			return;
-		inited = true;
-		GMAF gmaf = new GMAF();
-		name = Configuration.getInstance().getCollectionName();
+	public abstract void addProgressListener(ProgressListener pl);
 
-		try {
-			File rdfFolder = new File(Configuration.getInstance().getRDFRepo() + File.separatorChar);
-			File[] rdfFiles = rdfFolder.listFiles();
-			for (File rdf : rdfFiles) {
-				if (rdf.isFile()) {
-					InputStream in = RDFDataMgr.open(rdf.getPath());
-					model.read(in, null);
-				}
-			}
+	public abstract void addRefreshListener(RefreshListener re);
 
-			Vector<String> paths = Configuration.getInstance().getCollectionPaths();
-			if (paths == null)
-				return;
-			Vector<String> fileExtensions = Configuration.getInstance().getFileExtensions();
-			for (String path : paths) {
-				File f = new File(path);
-				try {
-					File[] fs = f.listFiles();
-					int count = 0;
-					for (File fi : fs) {
-						count++;
-						int progress = 100 * count / fs.length;
-						String txt = "loading " + path + " > " + fi.getName() + " (" + count + " / " + fs.length + ")";
-						System.out.println(progress + " -> " + txt);
-						for (ProgressListener pl : progressListeners) {
-							pl.log(progress, txt);
-						}
+	public abstract void refresh();
 
-						try {
-							String fileName = fi.getName();
-							String ext = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
-							if (fileExtensions.contains(ext)) {
-								if (fi.getName().endsWith(".wapo")) {
-									FileInputStream fsx = new FileInputStream(fi);
-									byte[] bytes = fsx.readAllBytes();
-									MMFG mmfg = gmaf.processAsset(bytes, fi.getName(), "system",
-											Configuration.getInstance().getMaxRecursions(),
-											Configuration.getInstance().getMaxNodes(), f.getName(), f);
-									GeneralMetadata gm = new GeneralMetadata();
-									gm.setFileName(fileName);
-									gm.setFileReference(fi);
-									mmfg.setGeneralMetadata(gm);
-									addToCollection(mmfg);
-								} else {
-									MMFG mmfg = new MMFG();
-									GeneralMetadata gm = new GeneralMetadata();
-									gm.setFileName(fileName);
-									gm.setFileReference(fi);
-									mmfg.setGeneralMetadata(gm);
-
-									File existingMMFG = new File(Configuration.getInstance().getMMFGRepo()
-											+ File.separatorChar + fileName + ".mmfg");
-									if (existingMMFG.exists()) {
-										mmfg = loadFromMMFGFile(existingMMFG);
-										if (mmfg.getGeneralMetadata() == null)
-											mmfg.setGeneralMetadata(gm);
-										if (mmfg.getGeneralMetadata().getFileReference() == null)
-											mmfg.getGeneralMetadata().setFileReference(fi);
-									}
-									addToCollection(mmfg);
-								}
-								if (Configuration.getInstance().getSelectedAsset() == null)
-									Configuration.getInstance().setSelectedAsset(fi);
-							}
-						} catch (Exception x) {
-							x.printStackTrace();
-						}
-					}
-				} catch (Exception x) {
-					x.printStackTrace();
-				}
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		inited = true;
-	}
+	public abstract void init();
 
 	public MMFG loadFromMMFGFile(File existingMMFG) {
 		try {
@@ -253,23 +179,11 @@ public class MMFGCollection {
 		return v;
 	}
 
-	/** returns or generates a Graph Code for a given MMFG **/
-	public GraphCode getOrGenerateGraphCode(MMFG mmfg) {
-		if (graphCodeCache.containsKey(mmfg))
-			return graphCodeCache.get(mmfg);
-		GraphCode gc = GraphCodeGenerator.generate(mmfg);
-		graphCodeCache.put(mmfg, gc);
-		return gc;
-	}
+	public abstract Vector<MMFG> getCollection();
 
-	/** returns similar assets based on a Graph Code query **/
-	public Vector<MMFG> getSimilarAssets(GraphCode gcQuery) {
-		return processQuery(gcQuery, CollectionProcessor.SIMILARITY);
-	}
+	public abstract void replaceMMFGInCollection(MMFG m, File f);
 
-	public int getIndexForAsset(MMFG m) {
-		return collection.indexOf(m);
-	}
+	public abstract String getName();
 
 	public Vector<MMFG> processQuery(GraphCode gcQuery, int type) {
 		CollectionProcessor cp = new DefaultCollectionProcessor();
@@ -283,67 +197,24 @@ public class MMFGCollection {
 		}
 		cp.setOperation(type);
 
-		Vector<GraphCodeMeta> v = new Vector<GraphCodeMeta>();
-		Hashtable<String, MMFG> queryCache = new Hashtable<String, MMFG>();
 
-		for (MMFG m : collection) {
-			GraphCode gc = null;
-			File f = new File(Configuration.getInstance().getGraphCodeRepository() + File.separatorChar
-					+ m.getGeneralMetadata().getFileName() + ".gc");
-			if (graphCodeCache.containsKey(m))
-				gc = graphCodeCache.get(m);
-			else if (f.exists()) {
-				gc = GraphCodeIO.read(f);
-				graphCodeCache.put(m, gc);
-			}
-			if (gc == null) {
-				gc = GraphCodeGenerator.generate(m);
-				if (gc.getDictionary().size() > 1) {
-					GraphCodeIO.write(gc, f);
-					graphCodeCache.put(m, gc);
-				}
-			}
+	public abstract MMFG getMMFGForId(UUID id);
 
-			String gcName = m.getGeneralMetadata().getFileName() + ".gc";
-			GraphCodeMeta gcm = new GraphCodeMeta(gcName, gc);
-			queryCache.put(gcName, m);
-			v.add(gcm);
-		}
+	public abstract GraphCode getCurrentQuery();
 
-		cp.setQueryObject(gcQuery);
-		cp.preloadIndex(v);
-		cp.execute();
-		v = cp.getResultList();
+	public abstract Vector<GraphCode> getCollectionGraphCodes();
 
-		Vector<MMFG> tempCollection = new Vector<MMFG>();
-		for (GraphCodeMeta gcm : v) {
-			MMFG m = queryCache.get(gcm.getFileName());
-			m.setTempSimilarity(gcm.getMetric());
-			tempCollection.add(m);
-		}
-		collection = tempCollection;
-		return tempCollection;
-	}
+	public abstract GraphCode getOrGenerateGraphCode(MMFG mmfg);
 
-	public static boolean isQuery = false;
+	public abstract Vector<MMFG> getSimilarAssets(GraphCode gcQuery);
 
-	/** returns recommended assets based on a Graph Code query **/
-	public Vector<MMFG> getRecommendedAssets(GraphCode gcQuery) {
-		return processQuery(gcQuery, CollectionProcessor.RECOMMENDATION);
-	}
+	public abstract int getIndexForAsset(MMFG m);
 
-	private Hashtable<MMFG, GraphCode> graphCodeCache = new Hashtable<MMFG, GraphCode>();
+	public abstract Vector<MMFG> processQuery(GraphCode gcQuery, int type);
 
-	/** executes a query **/
-	public void query(GraphCode gcQuery) {
-		currentQuery = gcQuery;
+	public abstract Vector<MMFG> getRecommendedAssets(GraphCode gcQuery);
 
-		processQuery(gcQuery, CollectionProcessor.SIMILARITY);
-		for (RefreshListener re : refreshListeners) re.refresh();
-	}
+	public abstract void query(GraphCode gcQuery);
 
-	public Model getRDFModel() {
-		return model;
-	}
-
+	public abstract Model getRDFModel();
 }
