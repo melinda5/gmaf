@@ -89,8 +89,9 @@ public class RSSImporter {
 			x.printStackTrace();
 		}
 	}
-	
+/*	
 	public static void main(String[] args) throws Exception {
 		new RSSImporter(new URL("https://rss.nytimes.com/services/xml/rss/nyt/World.xml"), "rss");
 	}
+	*/
 }
