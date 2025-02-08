@@ -27,8 +27,8 @@ class Test {
     @org.junit.jupiter.api.Test
     void testVideo1() {
         String filename = "video.mp5";
-        assertTrue(vp.canProcess(filename.substring(filename.length() - 4)),
-                "Video " + filename + " cannot be processed");
+        assertFalse(vp.canProcess(filename.substring(filename.length() - 4)),
+                "Video " + filename + " can be processed");
     }
 
     /** 
@@ -49,8 +49,8 @@ class Test {
     @org.junit.jupiter.api.Test
     void testImage1() {
         String filename = "image.xyz";
-        assertTrue(ip.canProcess(filename.substring(filename.length() - 4)),
-                "Image " + filename + " cannot be processed");
+        assertFalse(ip.canProcess(filename.substring(filename.length() - 4)),
+                "Image " + filename + " can be processed");
     }
 
     /** 
