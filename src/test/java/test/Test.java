@@ -2,16 +2,28 @@ package test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.*;
-
 import de.swa.gmaf.plugin.fachpraktikum.ImagePlugin;
 import de.swa.gmaf.plugin.fachpraktikum.VideoPlugin;
-import de.swa.mmfg.MMFG;
 
+/** 
+ * Class for JUnit-testing
+ * 
+ * @author Melinda Betz
+ */
 class Test {
+    /** 
+     * Test-Instance of VideoPlugin
+     */
     VideoPlugin vp = new VideoPlugin();
+    /** 
+     *  Test-Instance of ImagePlugin
+     */
     ImagePlugin ip = new ImagePlugin();
 
+    /** 
+     * Test of Method VideoPlugin.canProcess.
+     * Expected: failure
+     */
     @org.junit.jupiter.api.Test
     void testVideo1() {
         String filename = "video.mp5";
@@ -19,6 +31,10 @@ class Test {
                 "Video " + filename + " cannot be processed");
     }
 
+    /** 
+     * Test of Method VideoPlugin.canProcess.
+     * Expected: ok
+     */
     @org.junit.jupiter.api.Test
     void testVideo2() {
         String filename = "video.mp4";
@@ -26,6 +42,10 @@ class Test {
                 "Video " + filename + " cannot be processed");
     }
 
+    /** 
+     * Test of Method ImagePlugin.canProcess.
+     * Expected: failure
+     */
     @org.junit.jupiter.api.Test
     void testImage1() {
         String filename = "image.xyz";
@@ -33,6 +53,10 @@ class Test {
                 "Image " + filename + " cannot be processed");
     }
 
+    /** 
+     * Test of Method ImagePlugin.canProcess.
+     * Expected: ok
+     */
     @org.junit.jupiter.api.Test
     void testImage2() {
         String filename = "image.png";
@@ -40,6 +64,10 @@ class Test {
                 "Image " + filename + " cannot be processed");
     }
 
+    /** 
+     * Test of Method ImagePlugin.canProcess.
+     * Expected: ok
+     */
     @org.junit.jupiter.api.Test
     void testImage3() {
         String filename = "image.jpg";

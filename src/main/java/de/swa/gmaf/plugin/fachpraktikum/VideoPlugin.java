@@ -37,7 +37,7 @@ public class VideoPlugin implements GMAF_Plugin {
         try {
             String filename;
             BufferedReader reader = new BufferedReader(new FileReader(f));
-            
+
             String[] line;
             String[] line1 = null;
             String temp;
@@ -48,93 +48,94 @@ public class VideoPlugin implements GMAF_Plugin {
             Context confidence;
             Context stride;
             Context threshold;
+            filename = "";
 
             String linestr = reader.readLine();
-            
+
             // set filename in general metadata
             if (linestr != null) 
-                if (linestr.length() > 0)
+                if (linestr.length() > 0) {
                     line1 = linestr.split("\\s+");
                     filename = line1[0];
                     generalMetadata.setFileName(filename);
-
-            mmfg.setGeneralMetadata(generalMetadata); 
-            
-            // create a root node for the object detection
-            Node video = new Node("Root-Asset", mmfg);
-            
-            // set detectedby
-            if (line1.length > 1) 
-                video.setDetectedBy(line1[1]);
-            
-            // set stride as weight
-            if (line1.length > 2) {
-                stride = new Context();
-                stride.setName("Stride");
-                video.addWeight(new Weight(stride,  Integer.valueOf(line1[2])));                
-            }
-            
-            // set threshold as weight
-            if (line1.length > 3) {
-                threshold = new Context();
-                threshold.setName("Threshold");
-                video.addWeight(new Weight(threshold,  Float.valueOf(line1[3])));                
-            }
-            
-            linestr = reader.readLine();
-
-            while (linestr != null) {
-                if (linestr.length() > 0) {
-                    // handle text queries containing blanks
-                    temp = "";
-                    line = linestr.split("\\s+");
-                    diff = line.length - 8;
-     
-                    for (i=2; i <= 2+diff; i++) {
-                        if (i < 2+diff)
-                            temp = temp + line[i] + " ";
-                        else
-                            temp = temp + line[i];
-                    }
-                    
-                    // create a node for the detection
-                    label = new Node(temp, mmfg);
-                    
-                    // set confidence as weight
-                    confidence = new Context();
-                    confidence.setName("Confidence");
-                    label.addWeight(new Weight(confidence,  Float.valueOf(line[7 + diff])));
-                    
-                    // set bounding box coordinates as technical attribute
-                    label.addTechnicalAttribute(new TechnicalAttribute( 
-                            Math.round(Float.valueOf(line[3 + diff])),
-                            Math.round(Float.valueOf(line[4 + diff])),
-                            Math.round(Float.valueOf(line[5 + diff])),
-                            Math.round(Float.valueOf(line[6 + diff]))
-                            , 0, 0));
-                    
-                    // set detectedby
-                    if (line1.length > 1) 
-                        label.setDetectedBy(line1[1]);
-                    
-                    // set filename in general metadata
-                    generalMetadata = new GeneralMetadata();
-                    generalMetadata.setFileName(line[0]);
-                    fv = new MMFG();
-                    fv.setGeneralMetadata(generalMetadata);
-                    
-                    // set classid and class (or text query) of the detection as type and name of a location
-                    fv.addLocation(new Location(Integer.valueOf(line[1]), url, temp));
-                    label.setFeatureVector(fv);                  
-                    
-                    video.addChildNode(label);
+                    mmfg.setGeneralMetadata(generalMetadata);
                 }
-                
+
+            if (canProcess(filename.substring(filename.length() - 4)) || ApiStart.folderProcessing) {
+                // create a root node for the object detection
+                Node video = new Node("Root-Asset", mmfg);
+
+                // set detectedby
+                if (line1.length > 1) video.setDetectedBy(line1[1]);
+
+                // set stride as weight
+                if (line1.length > 2) {
+                    stride = new Context();
+                    stride.setName("Stride");
+                    video.addWeight(new Weight(stride, Integer.valueOf(line1[2])));
+                }
+
+                // set threshold as weight
+                if (line1.length > 3) {
+                    threshold = new Context();
+                    threshold.setName("Threshold");
+                    video.addWeight(new Weight(threshold, Float.valueOf(line1[3])));
+                }
+
                 linestr = reader.readLine();
-            }
-                        
-            reader.close();
-        } catch(IOException e) {
+
+                while (linestr != null) {
+                    if (linestr.length() > 0) {
+                        // handle text queries containing blanks
+                        temp = "";
+                        line = linestr.split("\\s+");
+                        diff = line.length - 8;
+
+                        for (i = 2; i <= 2 + diff; i++) {
+                            if (i < 2 + diff)
+                                temp = temp + line[i] + " ";
+                            else
+                                temp = temp + line[i];
+                        }
+
+                        // create a node for the detection
+                        label = new Node(temp, mmfg);
+
+                        // set confidence as weight
+                        confidence = new Context();
+                        confidence.setName("Confidence");
+                        label.addWeight(new Weight(confidence, Float.valueOf(line[7 + diff])));
+
+                        // set bounding box coordinates as technical attribute
+                        label.addTechnicalAttribute(new TechnicalAttribute(Math.round(Float.valueOf(line[3 + diff])),
+                                Math.round(Float.valueOf(line[4 + diff])), Math.round(Float.valueOf(line[5 + diff])),
+                                Math.round(Float.valueOf(line[6 + diff])), 0, 0));
+
+                        // set detectedby
+                        if (line1.length > 1) label.setDetectedBy(line1[1]);
+
+                        // set filename in general metadata
+                        generalMetadata = new GeneralMetadata();
+                        generalMetadata.setFileName(line[0]);
+                        fv = new MMFG();
+                        fv.setGeneralMetadata(generalMetadata);
+
+                        // set classid and class (or text query) of the detection as type and name of a
+                        // location
+                        fv.addLocation(new Location(Integer.valueOf(line[1]), url, temp));
+                        label.setFeatureVector(fv);
+
+                        video.addChildNode(label);
+                    }
+
+                    linestr = reader.readLine();
+                }
+
+                reader.close();
+            } else
+                System.exit(11);
+
+        } catch (IOException e) {
             e.printStackTrace();
             System.exit(14);
         }

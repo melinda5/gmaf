@@ -26,7 +26,7 @@ public class ApiStart {
      *                              11  wrong file extension
      *                              12  wrong type 
      *                              13  error creating xml 
-     *                              13  error in plugin
+     *                              14  error in plugin
      * 
      * @param args args[0] type of object detection: V for video - P for picture - F for folder
      *                       args[1] resultfile of the object detection
@@ -39,34 +39,25 @@ public class ApiStart {
         String type = args[0];
         String resultfile = args[1];
         String outputPath = args[2];
-        File file = new File(outputPath+resultfile);
+        File file = new File(outputPath+"\\"+resultfile);
         MMFG mmfg = new MMFG();
 
         // video processing MMFG
         if (type.equals("V")) {
             VideoPlugin vp = new VideoPlugin();
-            if (vp.canProcess(resultfile.substring(resultfile.length() - 4)))
-                vp.process(null, file, null, mmfg);
-            else
-                System.exit(11);
+            vp.process(null, file, null, mmfg);
         } else
         // image processing MMFG
             if (type.equals("P")) {
                 ImagePlugin ip = new ImagePlugin();
-                if (ip.canProcess(resultfile.substring(resultfile.length() - 4)))
-                    ip.process(null, file, null, mmfg);
-                else
-                    System.exit(11);
+                ip.process(null, file, null, mmfg);
             } else {
                 // folder processing MMFG
                 if (type.equals("F")) 
                     folderProcessing = true;
                 if (type.equals("F") || type.equals("P")) {
                     ImagePlugin ipf = new ImagePlugin();
-                    if (ipf.canProcess(resultfile.substring(resultfile.length() - 4)))
-                        ipf.process(null, file, null, mmfg);
-                    else
-                        System.exit(11);
+                    ipf.process(null, file, null, mmfg);
                 } else
                     System.exit(12);
             }
@@ -76,7 +67,7 @@ public class ApiStart {
         
         try {
          // save xml file to given output folder
-            PrintWriter writer = new PrintWriter(outputPath+resultfile.substring(0, resultfile.length() - 10)+"mmfg.xml", "UTF-8");
+            PrintWriter writer = new PrintWriter(outputPath+"\\"+resultfile.substring(0, resultfile.length() - 10)+"mmfg.xml", "UTF-8");
             writer.println(result);
             writer.close();
           }

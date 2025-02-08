@@ -32,8 +32,9 @@ public class ImagePlugin implements GMAF_Plugin {
             String filename;
             String detectedBy;
             BufferedReader reader = new BufferedReader(new FileReader(f));
-            
+
             String[] line;
+            String[] line1 = null;
             String temp;
             int diff, i;
             int min = 1;
@@ -42,91 +43,93 @@ public class ImagePlugin implements GMAF_Plugin {
             GeneralMetadata generalMetadata = new GeneralMetadata();
             Context threshold;
             Context confidence;
-            
-            String linestr = reader.readLine();
-            String[] line1 = linestr.split("\\s+");
+            filename = "";
+
+            String linestr = reader.readLine();            
 
             if (ApiStart.folderProcessing)
                 min = 0;
             else
-                // set filename in general metadata (not for the folder case)
-                if (linestr.length() > 0) {
-                    filename = line1[0];
-                    generalMetadata.setFileName(filename);
-                    mmfg.setGeneralMetadata(generalMetadata);
-                }
-            
-            // create a root node for the object detection
-            Node image = new Node("Root-Asset", mmfg);
-            
-            // set detectedby
-            if (line1.length > min) {
-                detectedBy = line1[min];
-                image.setDetectedBy(detectedBy);
-            }
-            
-            // set threshold as weight
-            if (line1.length > min+1) {
-                threshold = new Context();
-                threshold.setName("Threshold");
-                image.addWeight(new Weight(threshold,  Float.valueOf(line1[min+1])));                
-            }
-            
-            linestr = reader.readLine();
-            
-            while (linestr != null) {
-                if (linestr.length() > 0) {
-                    // handle classes or text queries containing blanks
-                    temp = "";
-                    line = linestr.split("\\s+");
-                    diff = line.length - 8;
-     
-                    for (i=2; i <= 2+diff; i++) {
-                        if (i < 2+diff)
-                            temp = temp + line[i] + " ";
-                        else
-                            temp = temp + line[i];
+            // set filename in general metadata (not for the folder case)
+                if (linestr != null) 
+                    if (linestr.length() > 0) {
+                        line1 = linestr.split("\\s+");
+                        filename = line1[0];
+                        generalMetadata.setFileName(filename);
+                        mmfg.setGeneralMetadata(generalMetadata);
                     }
-                    
-                    // create a node for the detection
-                    label = new Node(temp, mmfg);
-                    
-                    // set confidence as weight
-                    confidence = new Context();
-                    confidence.setName("Confidence");
-                    label.addWeight(new Weight(confidence,  Float.valueOf(line[7 + diff])));
-                    
-                    // set bounding box coordinates as technical attribute
-                    label.addTechnicalAttribute(new TechnicalAttribute( 
-                            Math.round(Float.valueOf(line[3 + diff])),
-                            Math.round(Float.valueOf(line[4 + diff])),
-                            Math.round(Float.valueOf(line[5 + diff])),
-                            Math.round(Float.valueOf(line[6 + diff]))
-                            , 0, 0));
-                    
-                    // set detectedby
-                    if (line1.length > min) 
-                        label.setDetectedBy(line1[min]);
-                    
-                    // set filename in general metadata
-                    generalMetadata = new GeneralMetadata();
-                    generalMetadata.setFileName(line[0]);
-                    fv = new MMFG();
-                    fv.setGeneralMetadata(generalMetadata);
-                    
-                    // set classid and class (or text query) of the detection as type and name of a location
-                    fv.addLocation(new Location(Integer.valueOf(line[1]), url, temp));
-                    label.setFeatureVector(fv);                  
-                    
-                    image.addChildNode(label);
+
+            if (canProcess(filename.substring(filename.length() - 4)) || ApiStart.folderProcessing) {
+                // create a root node for the object detection
+                Node image = new Node("Root-Asset", mmfg);
+
+                // set detectedby
+                if (line1.length > min) {
+                    detectedBy = line1[min];
+                    image.setDetectedBy(detectedBy);
                 }
-                
+
+                // set threshold as weight
+                if (line1.length > min + 1) {
+                    threshold = new Context();
+                    threshold.setName("Threshold");
+                    image.addWeight(new Weight(threshold, Float.valueOf(line1[min + 1])));
+                }
+
                 linestr = reader.readLine();
-            }
-            
-            reader.close();
-            
-        } catch(IOException e) {
+
+                while (linestr != null) {
+                    if (linestr.length() > 0) {
+                        // handle classes or text queries containing blanks
+                        temp = "";
+                        line = linestr.split("\\s+");
+                        diff = line.length - 8;
+
+                        for (i = 2; i <= 2 + diff; i++) {
+                            if (i < 2 + diff)
+                                temp = temp + line[i] + " ";
+                            else
+                                temp = temp + line[i];
+                        }
+
+                        // create a node for the detection
+                        label = new Node(temp, mmfg);
+
+                        // set confidence as weight
+                        confidence = new Context();
+                        confidence.setName("Confidence");
+                        label.addWeight(new Weight(confidence, Float.valueOf(line[7 + diff])));
+
+                        // set bounding box coordinates as technical attribute
+                        label.addTechnicalAttribute(new TechnicalAttribute(Math.round(Float.valueOf(line[3 + diff])),
+                                Math.round(Float.valueOf(line[4 + diff])), Math.round(Float.valueOf(line[5 + diff])),
+                                Math.round(Float.valueOf(line[6 + diff])), 0, 0));
+
+                        // set detectedby
+                        if (line1.length > min) label.setDetectedBy(line1[min]);
+
+                        // set filename in general metadata
+                        generalMetadata = new GeneralMetadata();
+                        generalMetadata.setFileName(line[0]);
+                        fv = new MMFG();
+                        fv.setGeneralMetadata(generalMetadata);
+
+                        // set classid and class (or text query) of the detection as type and name of a
+                        // location
+                        fv.addLocation(new Location(Integer.valueOf(line[1]), url, temp));
+                        label.setFeatureVector(fv);
+
+                        image.addChildNode(label);
+                    }
+
+                    linestr = reader.readLine();
+                }
+
+                reader.close();
+            } else
+                System.exit(11);
+
+        } catch (IOException e) {
             e.printStackTrace();
             System.exit(14);
         }
