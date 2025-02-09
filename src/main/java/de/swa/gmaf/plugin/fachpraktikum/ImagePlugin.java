@@ -47,19 +47,20 @@ public class ImagePlugin implements GMAF_Plugin {
 
             String linestr = reader.readLine();            
 
+            if (linestr != null) 
+                if (linestr.length() > 0)
+                    line1 = linestr.split("\\s+");
+            
             if (ApiStart.folderProcessing)
                 min = 0;
-            else
+            else {
             // set filename in general metadata (not for the folder case)
-                if (linestr != null) 
-                    if (linestr.length() > 0) {
-                        line1 = linestr.split("\\s+");
-                        filename = line1[0];
-                        generalMetadata.setFileName(filename);
-                        mmfg.setGeneralMetadata(generalMetadata);
-                    }
+                filename = line1[0];
+                generalMetadata.setFileName(filename);
+                mmfg.setGeneralMetadata(generalMetadata);
+            }
 
-            if (canProcess(filename.substring(filename.length() - 4)) || ApiStart.folderProcessing) {
+            if (ApiStart.folderProcessing || canProcess(filename.substring(filename.length() - 4))) {
                 // create a root node for the object detection
                 Node image = new Node("Root-Asset", mmfg);
 
